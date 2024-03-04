@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html">
+		<script src="objects.js"></script>
+		<title>variable viewer</title>
+		<style>
+#canvas {
+	background: #333
+}
+		</style>
+	</head>
+	<body>
+		<canvas id="canvas" width="640" height="480"></canvas>
+		<script>
+		window.addEventListener("load", () => {
+			loadStatus("http://localhost:8000/docs/cycles/global.csv",
+						10, 20, 80, 20);
+			loadStatus("http://localhost:8000/docs/statues/statues.csv",
+						10, 60, 80, 20);
+						
+			/*
+			let global = genBox("global.csv",10,10,80,20);
+			global.addChild("input1");
+			global.addChild("input2");
+			global.addChild("input3");
+			global.addChild("output1");
+			global.addChild("output2");
+
+			let status_ = genBox("statuses.csv",110,10,80,20);
+			status_.addChild("trig");
+			status_.addChild("stop");
+			status_.addChild("reset");
+			status_.addChild("select");
+		  	*/
+		   
+
+			let combo = genBox("combo.csv",210,10,80,20);
+			combo.addChild("fatal");
+			combo.addChild("stoperror");
+			combo.addChild("alarm");
+			genArrow("input1", "fatal");
+			genArrow("stop", "fatal");
+			genArrow("input2", "stoperror");
+			genArrow("input3", "alarm");
+
+			let cycle = genBox("cycle.csv",310,10,80,20);
+			cycle.addChild("ST1");
+			cycle.addChild("ST2");
+			cycle.addChild("ST3");
+			cycle.addChild("ST4");
+			genArrow("stop", "ST1");
+			genArrow("ST1", "output1");
+			genArrow("reset", "ST2");
+			genArrow("ST2", "output2");
+
+			redraw();
+		});
+		</script>
+	</body>
+</html>
