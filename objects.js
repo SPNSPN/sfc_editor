@@ -16,6 +16,21 @@ window.addEventListener("load", () => {
 
 });
 
+function getList(url)
+{
+	return fetch(url)
+		.then(response =>
+			{
+				if (!response.ok) { throw new Error(`Fail Request GetFiles: ${response.status}`); }
+				return response.text();
+			})
+		.then(data =>
+			{
+				return data.split("\n");
+			})
+		.catch(error => { console.error(`Fail Request GetFiles: ${error}`); });
+}
+
 function loadStatus(path, x, y, w, h)
 {
 	fetch(path)						
@@ -34,10 +49,7 @@ function loadStatus(path, x, y, w, h)
 					});
 				redraw();
 			})
-		.catch(error =>
-			{
-				console.error(`Fail Request FileOpen: ${error}`);
-			});
+		.catch(error => { console.error(`Fail Request FileOpen: ${error}`); });
 }
 
 /*
