@@ -14,25 +14,27 @@
 		<canvas id="canvas" width="640" height="480"></canvas>
 		<script>
 		window.addEventListener("load", () => {
-			let cnt = 0;
 			let files = getList("http://localhost:8080/getfiles");
 			files.then(ans =>
 				{
-					console.log(ans);
+					let cnt = 0;
 					// Status.csv
 					ans.filter(fname => fname.match("statues.csv$"))
 					.forEach(fname =>
 					{
 						loadStatus(`http://localhost:8080/${fname}`,
 									10, 20+cnt*40, 80, 20);
+						++cnt;
 					});
 
+					cnt = 0;
 					// GlobalVariable.csv
 					ans.filter(fname => fname.match("global.csv$"))
 					.forEach(fname =>
 					{
 						loadStatus(`http://localhost:8080/${fname}`,
 									110, 20+cnt*40, 80, 20);
+						++cnt;
 					});
 				});
 

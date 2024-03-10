@@ -4,9 +4,6 @@ $Port = "8080"
 # URL
 $url = "http://localhost:" + $Port + "/"
 
-# localhostに繋げない環境への対応
-#$url = "http://+:" + $Port + "/Temporary_Listen_Addresses/"
-
 # リクエストがルート(/)の場合、呼び出されるファイル
 $HomePage = "index.html"
 
@@ -20,6 +17,7 @@ $ContentType = @{
 	"txt" = "text/plain"
 	"jpg" = "image/jpeg"
 	"png" = "image/png"
+	"csv" = "text/plain"
 	"*" = "application/octet-stream"
 }
 
@@ -29,28 +27,37 @@ function responseFile ([ref]$response, $fileName)
 	$currentDirectory = Convert-Path .
 	$fullPath = Join-Path $currentDirectory $fileName
 	if ([IO.File]::Exists($fullPath)) {
-		$extension = $(Get-Item $fullPath).Extension.Replace(".", "")
+		$extension = $(ls $fullPath).Extension.Replace(".", "")
 		if ($ContentType.ContainsKey($extension)) {
 			$response.Value.ContentType = $ContentType[$extension]
 		} else {
 			$response.Value.ContentType = $ContentType["*"]
 		}
-		$response.Value.ContentType += ";charset=UTF-8"
-		$content = [IO.File]::ReadAllBytes($fullPath)
+		$response.Value.ContentType += ";charset=UTF-8" # エンコードはUTF-8で決め打ち
+
+		# 一旦ファイルを読み込んでからUTF-8形式でエンコードする
+		$rawtxt = cat $fullPath
+		$content = [System.Text.Encoding]::UTF8.GetBytes([String]::Join("`n", $rawtxt))
+
 		$response.Value.ContentLength64 = $content.Length
 		$output = $response.Value.OutputStream
 		$output.Write($content, 0, $content.Length)
 		$output.Close()
 	} else {
+		# 存在しないファイルは404エラー
 		$response.Value.StatusCode = 404
 	}
 }
 
-function responseFileList ([ref]$response, $fileList)
+function responseFileList ([ref]$response)
 {
 	$response.Value.ContentType = $ContentType["txt"]
 	$response.Value.ContentType += ";charset=UTF-8"
+
+	# ファイル一覧取得
+	$fileList = ls -r | % {$_.FullName | Resolve-Path -Relative}
 	$content = [System.Text.Encoding]::UTF8.GetBytes([String]::Join("`n", $fileList))
+
 	$response.Value.ContentLength64 = $content.Length
 	$output = $response.Value.OutputStream
 	$output.Write($content, 0, $content.Length)
@@ -80,8 +87,7 @@ function main {
 			{
 				if ($command -eq "/getfiles")
 				{
-					$files = ls -r | % {$_.FullName | Resolve-Path -Relative}
-					responseFileList ([ref]$response) $files
+					responseFileList ([ref]$response)
 				}
 				elseif ($command -eq "/")
 				{
